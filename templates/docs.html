@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JobKit API — Documentation</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="logo">JobKit <span class="accent">API</span></a>
+      <div class="nav-links">
+        <a href="/docs" class="active">Docs</a>
+        <a href="/openapi.json">OpenAPI</a>
+        <a href="/#pricing" class="btn-outline">Get API Key</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="docs-layout">
+    <aside class="docs-sidebar">
+      <ul>
+        <li><a href="#auth">Authentication</a></li>
+        <li><a href="#rate-limits">Rate Limits</a></li>
+        <li><a href="#search">GET /v1/jobs/search</a></li>
+        <li><a href="#get-job">GET /v1/jobs/{id}</a></li>
+        <li><a href="#enrich">POST /v1/jobs/enrich</a></li>
+        <li><a href="#trending">GET /v1/skills/trending</a></li>
+        <li><a href="#health">GET /health</a></li>
+        <li><a href="#openapi">OpenAPI Spec</a></li>
+      </ul>
+    </aside>
+
+    <main class="docs-content">
+      <h1>JobKit API Documentation</h1>
+      <p>Enriched job posting data API — skills extracted, salaries normalized. <strong>v1.0.0</strong></p>
+      <p>Base URL: <code>https://your-replit-url.repl.co</code></p>
+
+      <hr />
+
+      <section id="auth">
+        <h2>Authentication</h2>
+        <p>All endpoints except <code>POST /v1/jobs/enrich</code> and <code>GET /health</code> require an API key passed in the request header:</p>
+        <pre><code>X-API-Key: your-api-key</code></pre>
+        <p>Demo key for testing: <code>demo-key-jobkit-2026</code></p>
+        <p>Returns <code>401 {"error": "Invalid API key"}</code> if key is missing or invalid.</p>
+      </section>
+
+      <section id="rate-limits">
+        <h2>Rate Limits</h2>
+        <p>Authenticated endpoints: <strong>10 requests per 60 seconds</strong> per API key.</p>
+        <p>Exceeding this returns <code>429 {"error": "Rate limit exceeded"}</code>.</p>
+      </section>
+
+      <hr />
+
+      <section id="search">
+        <h2>GET /v1/jobs/search</h2>
+        <p>Search and filter enriched job postings.</p>
+        <p><strong>Auth required:</strong> Yes (<code>X-API-Key</code>)</p>
+
+        <h3>Query Parameters</h3>
+        <table>
+          <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>q</code></td><td>string</td><td>Free-text search against title and skills</td></tr>
+            <tr><td><code>location</code></td><td>string</td><td>Filter by location substring</td></tr>
+            <tr><td><code>level</code></td><td>string</td><td>Junior | Mid | Senior | Lead | Staff | Principal</td></tr>
+            <tr><td><code>remote</code></td><td>string</td><td>Remote | Hybrid | Onsite | Unspecified</td></tr>
+            <tr><td><code>skills</code></td><td>string</td><td>Comma-separated skills (AND filter)</td></tr>
+            <tr><td><code>page</code></td><td>integer</td><td>Page number (default: 1)</td></tr>
+            <tr><td><code>per_page</code></td><td>integer</td><td>Results per page (default: 10, max: 50)</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Example Request</h3>
+        <pre><code>curl "https://your-replit-url.repl.co/v1/jobs/search?q=python&level=Senior&remote=Remote" \
+  -H "X-API-Key: demo-key-jobkit-2026"</code></pre>
+
+        <h3>Example Response — 200 OK</h3>
+        <pre><code>{
+  "total": 12,
+  "page": 1,
+  "per_page": 10,
+  "results": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "Senior Software Engineer",
+      "company": "Bright Labs",
+      "location": "Remote",
+      "posted_at": "2026-03-25",
+      "source": "seed",
+      "skills": ["Python", "Docker", "AWS", "PostgreSQL"],
+      "salary": { "min": 150000, "max": 190000, "currency": "USD", "period": "annual", "raw": "$150,000–$190,000" },
+      "experience_level": "Senior",
+      "remote_type": "Remote",
+      "tech_stack": ["Python", "Docker", "AWS", "PostgreSQL"]
+    }
+  ]
+}</code></pre>
+      </section>
+
+      <hr />
+
+      <section id="get-job">
+        <h2>GET /v1/jobs/{id}</h2>
+        <p>Retrieve a single enriched job record by its ID.</p>
+        <p><strong>Auth required:</strong> Yes (<code>X-API-Key</code>)</p>
+
+        <h3>Path Parameters</h3>
+        <table>
+          <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>string (UUID)</td><td>Job ID</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Example Request</h3>
+        <pre><code>curl "https://your-replit-url.repl.co/v1/jobs/550e8400-e29b-41d4-a716-446655440000" \
+  -H "X-API-Key: demo-key-jobkit-2026"</code></pre>
+
+        <h3>Responses</h3>
+        <ul>
+          <li><code>200</code> — enriched job record</li>
+          <li><code>404 {"error": "Job not found"}</code> — ID not found</li>
+        </ul>
+      </section>
+
+      <hr />
+
+      <section id="enrich">
+        <h2>POST /v1/jobs/enrich</h2>
+        <p>Enrich any raw job description text. No API key required.</p>
+        <p><strong>Auth required:</strong> No</p>
+
+        <h3>Request Body (JSON)</h3>
+        <pre><code>{
+  "description": "Looking for a Senior Python developer with AWS and Docker..."
+}</code></pre>
+
+        <h3>Example Request</h3>
+        <pre><code>curl -X POST "https://your-replit-url.repl.co/v1/jobs/enrich" \
+  -H "Content-Type: application/json" \
+  -d '{"description": "Senior Python engineer, FastAPI, AWS. Salary $120k-$150k. Remote."}'</code></pre>
+
+        <h3>Example Response — 200 OK</h3>
+        <pre><code>{
+  "skills": ["Python", "FastAPI", "AWS"],
+  "salary": { "min": 120000, "max": 150000, "currency": "USD", "period": "annual", "raw": "$120k-$150k" },
+  "experience_level": "Senior",
+  "remote_type": "Remote",
+  "tech_stack": ["Python", "FastAPI", "AWS"]
+}</code></pre>
+
+        <p><code>400</code> — if <code>description</code> field is missing or empty.</p>
+      </section>
+
+      <hr />
+
+      <section id="trending">
+        <h2>GET /v1/skills/trending</h2>
+        <p>Get trending skills aggregated across the job dataset.</p>
+        <p><strong>Auth required:</strong> No</p>
+
+        <h3>Query Parameters</h3>
+        <table>
+          <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>role</code></td><td>string</td><td>Filter by job title substring (optional)</td></tr>
+            <tr><td><code>location</code></td><td>string</td><td>Filter by location substring (optional)</td></tr>
+            <tr><td><code>days</code></td><td>integer</td><td>7 | 30 | 90 (default: 30)</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Example Request</h3>
+        <pre><code>curl "https://your-replit-url.repl.co/v1/skills/trending?role=engineer&days=30"</code></pre>
+
+        <h3>Example Response — 200 OK</h3>
+        <pre><code>{
+  "period_days": 30,
+  "role_filter": "engineer",
+  "total_jobs_analyzed": 87,
+  "trending_skills": [
+    { "skill": "Python", "count": 54, "rank": 1 },
+    { "skill": "Docker", "count": 41, "rank": 2 },
+    { "skill": "AWS", "count": 38, "rank": 3 }
+  ]
+}</code></pre>
+      </section>
+
+      <hr />
+
+      <section id="health">
+        <h2>GET /health</h2>
+        <p>Health check endpoint. No authentication required.</p>
+        <pre><code>curl "https://your-replit-url.repl.co/health"
+# 200 OK
+{ "status": "ok" }</code></pre>
+      </section>
+
+      <hr />
+
+      <section id="openapi">
+        <h2>OpenAPI Spec</h2>
+        <p>Machine-readable OpenAPI 3.0 specification available at:</p>
+        <p><a href="/openapi.json"><code>/openapi.json</code></a></p>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <span>JobKit API &copy; 2026</span>
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/openapi.json">OpenAPI</a>
+        <a href="/health">Status</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

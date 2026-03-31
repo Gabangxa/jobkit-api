@@ -1,0 +1,214 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "JobKit API",
+    "version": "1.0.0",
+    "description": "Enriched job posting data API — skills extracted, salaries normalized."
+  },
+  "servers": [
+    { "url": "https://your-replit-url.repl.co" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    },
+    "schemas": {
+      "Salary": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "min": { "type": "integer", "nullable": true },
+          "max": { "type": "integer", "nullable": true },
+          "currency": { "type": "string", "enum": ["USD", "GBP", "EUR"] },
+          "period": { "type": "string", "enum": ["annual", "hourly"] },
+          "raw": { "type": "string" }
+        }
+      },
+      "EnrichedJob": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "company": { "type": "string" },
+          "location": { "type": "string" },
+          "posted_at": { "type": "string", "format": "date" },
+          "source": { "type": "string" },
+          "skills": { "type": "array", "items": { "type": "string" } },
+          "salary": { "$ref": "#/components/schemas/Salary" },
+          "experience_level": { "type": "string", "enum": ["Junior", "Mid", "Senior", "Lead", "Staff", "Principal"] },
+          "remote_type": { "type": "string", "enum": ["Remote", "Hybrid", "Onsite", "Unspecified"] },
+          "tech_stack": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "EnrichmentResult": {
+        "type": "object",
+        "properties": {
+          "skills": { "type": "array", "items": { "type": "string" } },
+          "salary": { "$ref": "#/components/schemas/Salary" },
+          "experience_level": { "type": "string" },
+          "remote_type": { "type": "string" },
+          "tech_stack": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "TrendingSkill": {
+        "type": "object",
+        "properties": {
+          "skill": { "type": "string" },
+          "count": { "type": "integer" },
+          "rank": { "type": "integer" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/v1/jobs/search": {
+      "get": {
+        "summary": "Search enriched job postings",
+        "operationId": "searchJobs",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          { "name": "q", "in": "query", "schema": { "type": "string" }, "description": "Free-text search against title and skills" },
+          { "name": "location", "in": "query", "schema": { "type": "string" }, "description": "Filter by location substring" },
+          { "name": "level", "in": "query", "schema": { "type": "string", "enum": ["Junior", "Mid", "Senior", "Lead", "Staff", "Principal"] }, "description": "Filter by experience level" },
+          { "name": "remote", "in": "query", "schema": { "type": "string", "enum": ["Remote", "Hybrid", "Onsite", "Unspecified"] }, "description": "Filter by remote type" },
+          { "name": "skills", "in": "query", "schema": { "type": "string" }, "description": "Comma-separated skills (AND filter)" },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10, "maximum": 50 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated job results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": { "type": "integer" },
+                    "page": { "type": "integer" },
+                    "per_page": { "type": "integer" },
+                    "results": { "type": "array", "items": { "$ref": "#/components/schemas/EnrichedJob" } }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Invalid API key", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "429": { "description": "Rate limit exceeded", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/v1/jobs/{id}": {
+      "get": {
+        "summary": "Get a single job by ID",
+        "operationId": "getJob",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Job UUID" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Enriched job record",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EnrichedJob" }
+              }
+            }
+          },
+          "401": { "description": "Invalid API key", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "404": { "description": "Job not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/v1/jobs/enrich": {
+      "post": {
+        "summary": "Enrich a raw job description",
+        "operationId": "enrichDescription",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["description"],
+                "properties": {
+                  "description": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Enrichment result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EnrichmentResult" }
+              }
+            }
+          },
+          "400": { "description": "Missing or empty description field", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/v1/skills/trending": {
+      "get": {
+        "summary": "Get trending skills",
+        "operationId": "trendingSkills",
+        "parameters": [
+          { "name": "role", "in": "query", "schema": { "type": "string" }, "description": "Filter by job title substring" },
+          { "name": "location", "in": "query", "schema": { "type": "string" }, "description": "Filter by location substring" },
+          { "name": "days", "in": "query", "schema": { "type": "integer", "enum": [7, 30, 90], "default": 30 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Trending skills response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "period_days": { "type": "integer" },
+                    "role_filter": { "type": "string", "nullable": true },
+                    "total_jobs_analyzed": { "type": "integer" },
+                    "trending_skills": { "type": "array", "items": { "$ref": "#/components/schemas/TrendingSkill" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "ok" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

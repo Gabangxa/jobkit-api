@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JobKit API — Enriched Job Data for Developers</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <span class="logo">JobKit <span class="accent">API</span></span>
+      <div class="nav-links">
+        <a href="/docs">Docs</a>
+        <a href="/openapi.json">OpenAPI</a>
+        <a href="#pricing" class="btn-outline">Get API Key</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="badge">Now in Public Beta</div>
+      <h1>Enriched job data API<br/>for developers.</h1>
+      <p class="tagline">Skills extracted. Salaries normalized. <strong>$19/mo.</strong></p>
+      <div class="hero-cta">
+        <a href="/docs" class="btn-primary">Read the Docs</a>
+        <a href="#playground" class="btn-ghost">Try the Playground</a>
+      </div>
+      <div class="hero-code">
+        <pre><code>curl https://api.jobkit.dev/v1/jobs/search?q=python&amp;level=Senior \
+  -H "X-API-Key: demo-key-jobkit-2026"</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="section-inner">
+      <h2>Everything raw job data is missing</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🏷</div>
+          <h3>Skills Taxonomy</h3>
+          <p>120+ tech and soft skills extracted from every job description automatically.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💰</div>
+          <h3>Salary Normalization</h3>
+          <p>$120k–$150k, £60,000, $75/hr — all normalized to structured min/max/currency/period.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3>Experience Level</h3>
+          <p>Junior, Mid, Senior, Lead, Staff, Principal — classified from title and description text.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🌍</div>
+          <h3>Remote Classification</h3>
+          <p>Remote, Hybrid, Onsite, Unspecified — detected from location and description.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Enrichment Endpoint</h3>
+          <p>POST any raw job description text and get back structured enrichment in milliseconds.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📈</div>
+          <h3>Trending Skills</h3>
+          <p>Query which skills are most in-demand for any role, location, or time window.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLAYGROUND -->
+  <section class="playground" id="playground">
+    <div class="section-inner">
+      <h2>Live Playground</h2>
+      <p class="section-sub">Use demo key <code>demo-key-jobkit-2026</code> for all authenticated endpoints.</p>
+
+      <div class="example-grid">
+        <div class="example-card">
+          <div class="example-label">Search jobs</div>
+          <pre><code>curl "https://your-replit-url.repl.co/v1/jobs/search?q=python&amp;level=Senior&amp;remote=Remote" \
+  -H "X-API-Key: demo-key-jobkit-2026"</code></pre>
+        </div>
+        <div class="example-card">
+          <div class="example-label">Enrich a description</div>
+          <pre><code>curl -X POST "https://your-replit-url.repl.co/v1/jobs/enrich" \
+  -H "Content-Type: application/json" \
+  -d '{"description": "Senior Python developer, AWS, Docker required."}'</code></pre>
+        </div>
+        <div class="example-card">
+          <div class="example-label">Trending skills</div>
+          <pre><code>curl "https://your-replit-url.repl.co/v1/skills/trending?role=engineer&amp;days=30"</code></pre>
+        </div>
+      </div>
+
+      <!-- LIVE ENRICH FORM -->
+      <div class="enrich-widget">
+        <h3>Try enrichment live</h3>
+        <p>Paste any job description below and see the structured output instantly.</p>
+        <textarea id="enrichInput" rows="6" placeholder="Looking for a Senior Python developer with AWS and Docker experience. Salary $120k-$150k. Remote."></textarea>
+        <button id="enrichBtn" class="btn-primary">Enrich Description</button>
+        <div id="enrichResult" class="json-result hidden"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing" id="pricing">
+    <div class="section-inner">
+      <h2>Simple, indie-friendly pricing</h2>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <div class="plan-name">Free</div>
+          <div class="plan-price">$0<span>/mo</span></div>
+          <ul>
+            <li>500 API calls / month</li>
+            <li>All enrichment endpoints</li>
+            <li>Community support</li>
+          </ul>
+          <a href="#" class="btn-outline">Get started</a>
+        </div>
+        <div class="pricing-card featured">
+          <div class="plan-badge">Most popular</div>
+          <div class="plan-name">Developer</div>
+          <div class="plan-price">$19<span>/mo</span></div>
+          <ul>
+            <li>5,000 API calls / month</li>
+            <li>All enrichment endpoints</li>
+            <li>Email support</li>
+            <li>Higher rate limits</li>
+          </ul>
+          <a href="#" class="btn-primary">Get started</a>
+        </div>
+        <div class="pricing-card">
+          <div class="plan-name">Startup</div>
+          <div class="plan-price">$49<span>/mo</span></div>
+          <ul>
+            <li>25,000 API calls / month</li>
+            <li>All enrichment endpoints</li>
+            <li>Priority support</li>
+            <li>Webhook delivery</li>
+          </ul>
+          <a href="#" class="btn-outline">Get started</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <span>JobKit API &copy; 2026</span>
+      <div class="footer-links">
+        <a href="/docs">Docs</a>
+        <a href="/openapi.json">OpenAPI</a>
+        <a href="/health">Status</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('enrichBtn').addEventListener('click', async () => {
+      const desc = document.getElementById('enrichInput').value.trim();
+      const resultEl = document.getElementById('enrichResult');
+      if (!desc) {
+        resultEl.textContent = 'Please enter a job description.';
+        resultEl.classList.remove('hidden');
+        return;
+      }
+      document.getElementById('enrichBtn').textContent = 'Enriching...';
+      try {
+        const res = await fetch('/v1/jobs/enrich', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description: desc }),
+        });
+        const data = await res.json();
+        resultEl.textContent = JSON.stringify(data, null, 2);
+        resultEl.classList.remove('hidden');
+      } catch (err) {
+        resultEl.textContent = 'Error: ' + err.message;
+        resultEl.classList.remove('hidden');
+      } finally {
+        document.getElementById('enrichBtn').textContent = 'Enrich Description';
+      }
+    });
+  </script>
+</body>
+</html>
